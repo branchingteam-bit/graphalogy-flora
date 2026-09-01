@@ -773,16 +773,52 @@ h1, h2, h3, h4 {
   aspect-ratio: 4 / 5;
 }
 .portrait img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
-.portrait__fallback {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: rgba(255,255,255,.5);
-  font-family: var(--serif);
-  font-size: 4rem;
+
+/* nameplate — used on the About page in place of a photo */
+.nameplate {
+  aspect-ratio: 4 / 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .9rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: var(--radius-lg);
+  color: #f3f1ea;
+  background:
+    radial-gradient(24rem 18rem at 30% 18%, rgba(169,124,70,.16), transparent 60%),
+    linear-gradient(160deg, var(--forest-700), var(--forest-900));
+  box-shadow: var(--shadow-2);
+  position: relative;
 }
+.nameplate::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: calc(var(--radius-lg) - 8px);
+  pointer-events: none;
+}
+.nameplate__nib { width: 2.4rem; height: 2.4rem; color: var(--accent-soft); }
+.nameplate__name {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: #fff;
+}
+.nameplate__rule { width: 2.5rem; height: 1px; background: var(--accent-soft); opacity: .7; }
+.nameplate__role {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+  max-width: 20ch;
+  line-height: 1.7;
+}
+.nameplate__loc { font-size: .82rem; color: rgba(255, 255, 255, .6); }
 .about-lead__body h1,
 .about-lead__body h2 { margin-bottom: 1rem; }
 .about-lead__body p { color: var(--ink-soft); margin-bottom: 1.1rem; }
