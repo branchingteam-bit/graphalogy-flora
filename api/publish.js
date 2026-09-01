@@ -182,7 +182,7 @@ function footer() {
           <ul>
             <li><a href="/">Home</a></li>
             <li><a href="/my-story">My Story</a></li>
-            <li><a href="/services">Services &amp; Programs</a></li>
+            <li><a href="/services">Services</a></li>
             <li><a href="/testimonials">Testimonials</a></li>
             <li><a href="/blog">Journal</a></li>
             <li><a href="/contact">Contact</a></li>

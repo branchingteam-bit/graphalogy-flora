@@ -117,24 +117,47 @@
     }
   }
 
-  /* ---- Specimen: write the handwriting when it scrolls in --- */
+  /* ---- Specimen: write the handwriting letter by letter --- */
   if (specimen) {
+    var hw = specimen.querySelector('.specimen__hw');
+
+    if (hw && !reduce) {
+      // wrap every character in its own span so it can be revealed in order
+      var ci = 0;
+      var STEP = 55; // ms between letters
+      var splitNode = function (parent) {
+        Array.prototype.slice.call(parent.childNodes).forEach(function (node) {
+          if (node.nodeType === 3) {
+            var frag = document.createDocumentFragment();
+            node.nodeValue.split('').forEach(function (chr) {
+              var s = document.createElement('span');
+              s.className = 'ch';
+              s.style.setProperty('--ci', ci++);
+              s.textContent = chr;
+              frag.appendChild(s);
+            });
+            parent.replaceChild(frag, node);
+          } else if (node.nodeType === 1 && node.tagName !== 'BR' && !node.classList.contains('specimen__pop')) {
+            splitNode(node); // recurse into the highlighted <span class="specimen__t"> only
+          }
+        });
+      };
+      splitNode(hw);
+      specimen.style.setProperty('--write-ms', (ci * STEP + 400) + 'ms');
+    }
+
+    var start = function () { specimen.classList.add('is-writing'); };
     if (reduce || !('IntersectionObserver' in window)) {
-      specimen.classList.add('is-writing');
+      start();
     } else {
       var so = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) { specimen.classList.add('is-writing'); so.disconnect(); }
-        });
+        entries.forEach(function (e) { if (e.isIntersecting) { start(); so.disconnect(); } });
       }, { threshold: 0.35 });
       so.observe(specimen);
-      // safety: if it is already on screen at load, kick it off
       window.addEventListener('load', function () {
         setTimeout(function () {
           if (!specimen.classList.contains('is-writing') &&
-              specimen.getBoundingClientRect().top < window.innerHeight) {
-            specimen.classList.add('is-writing');
-          }
+              specimen.getBoundingClientRect().top < window.innerHeight) start();
         }, 500);
       });
     }
@@ -199,26 +222,28 @@
     });
   }
 
-  /* ---- Blog index: pull published posts --------------- */
-  var postList = document.getElementById('cmsPosts');
-  if (postList) {
-    fetch('posts/index.json', { cache: 'no-store' })
+  /* ---- Blog lists: pull published posts --------------- */
+  var fullList = document.getElementById('cmsPosts');   // /blog  (all posts)
+  var homeList = document.getElementById('homeJournal'); // /      (most recent 3)
+  if (fullList || homeList) {
+    var postCard = function (p) {
+      var a = document.createElement('a');
+      a.className = 'card article-card reveal is-in';
+      a.href = '/blog-' + p.slug;
+      a.innerHTML =
+        '<span class="article-meta">' + esc(p.date || '') + (p.readingTime ? ' &middot; ' + esc(p.readingTime) : '') + '</span>' +
+        '<h3>' + esc(p.title || 'Untitled') + '</h3>' +
+        '<p>' + esc(p.excerpt || '') + '</p>' +
+        '<span class="tlink">Read <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>';
+      return a;
+    };
+    fetch('/posts/index.json', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : { posts: [] }; })
       .then(function (data) {
         var posts = (data && data.posts) || [];
         if (!posts.length) return;
-        postList.innerHTML = '';
-        posts.forEach(function (p) {
-          var a = document.createElement('a');
-          a.className = 'card article-card reveal is-in';
-          a.href = '/blog-' + p.slug;
-          a.innerHTML =
-            '<span class="article-meta">' + esc(p.date || '') + (p.readingTime ? ' &middot; ' + esc(p.readingTime) : '') + '</span>' +
-            '<h3>' + esc(p.title || 'Untitled') + '</h3>' +
-            '<p>' + esc(p.excerpt || '') + '</p>' +
-            '<span class="tlink">Read <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>';
-          postList.appendChild(a);
-        });
+        if (fullList) { fullList.innerHTML = ''; posts.forEach(function (p) { fullList.appendChild(postCard(p)); }); }
+        if (homeList) { homeList.innerHTML = ''; posts.slice(0, 3).forEach(function (p) { homeList.appendChild(postCard(p)); }); }
       })
       .catch(function () {});
   }

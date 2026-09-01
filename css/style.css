@@ -491,54 +491,77 @@ h1, h2, h3, h4 {
   line-height: var(--rule);
   color: #1f2a24;
   letter-spacing: .01em;
-  /* written-in reveal */
-  clip-path: inset(0 100% 0 0);
 }
-.js .specimen.is-writing .specimen__hw {
-  animation: writeLine 1.7s cubic-bezier(.6, 0, .35, 1) .3s forwards;
+/* each letter fades / un-blurs in sequence, like it is being written */
+.js .specimen__hw .ch { opacity: 0; }
+.js .specimen.is-writing .specimen__hw .ch {
+  animation: inkIn .34s ease forwards;
+  animation-delay: calc(var(--ci, 0) * 55ms);
 }
-@keyframes writeLine {
-  0%   { clip-path: inset(0 100% 0 0); }
-  100% { clip-path: inset(0 -3% 0 0); }
+@keyframes inkIn {
+  from { opacity: 0; filter: blur(3px); transform: translateY(2px); }
+  to   { opacity: 1; filter: blur(0); transform: none; }
 }
 
-.specimen__t {
-  position: relative;
-  color: var(--accent);
-}
-.specimen__t::after {
-  /* little arrow tick pointing up at the crossbar */
-  content: "";
+/* the highlighted "t" and the small speech bubble that pops from it */
+.specimen__t { position: relative; color: var(--accent); font-weight: 700; }
+.specimen__pop {
   position: absolute;
   left: 50%;
-  top: -0.15em;
-  width: 0;
-  height: 0;
-  border: 5px solid transparent;
-  border-bottom-color: var(--accent);
-  transform: translateX(-50%);
+  top: calc(100% + 14px);
+  transform: translateX(-28px) scale(.4);
+  transform-origin: 28px 0;
+  width: max-content;
+  max-width: 200px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: .74rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: left;
+  padding: .55rem .7rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
   opacity: 0;
+  pointer-events: none;
+  z-index: 3;
 }
-.js .specimen.is-writing .specimen__t::after { animation: fadeUp .4s var(--ease) 2.2s forwards; }
+.specimen__pop strong { color: var(--forest-800); display: block; }
+.specimen__pop::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--line);
+}
+.specimen__pop::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 21px;
+  border: 7px solid transparent;
+  border-bottom-color: #fff;
+}
+.js .specimen.is-writing .specimen__pop {
+  animation: popIn .5s var(--ease) var(--write-ms, 2200ms) forwards;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateX(-28px) scale(.4); }
+  to   { opacity: 1; transform: translateX(-28px) scale(1); }
+}
 
-.specimen__note {
-  margin-top: 1rem;
-  display: flex;
-  gap: .7rem;
-  align-items: flex-start;
-  background: var(--forest-800);
-  color: #f2f0e9;
-  border-radius: 14px;
-  padding: .9rem 1.05rem;
-  font-size: .82rem;
-  line-height: 1.5;
-  box-shadow: var(--shadow-1);
-  transform: rotate(-1.3deg);
+.specimen__caption {
+  margin-top: .9rem;
+  font-size: .78rem;
+  color: var(--ink-faint);
+  text-align: center;
 }
-.js .specimen__note { opacity: 0; }
-.js .specimen.is-writing .specimen__note { animation: fadeUp .5s var(--ease) 2.4s forwards; }
-.specimen__note strong { color: #fff; display: block; margin-bottom: .1rem; font-size: .84rem; }
-.specimen__note svg { width: 1.1rem; height: 1.1rem; color: var(--accent-soft); flex-shrink: 0; margin-top: .1rem; }
+/* leave room under the sheet for the pop bubble when JS is on */
+.js .specimen__caption { margin-top: 3.5rem; }
 
 /* 8. CREDENTIAL STRIP --------------------------------------- */
 .creds {
@@ -1339,9 +1362,8 @@ a.channel:hover { border-color: var(--sage-400); box-shadow: var(--shadow-1); }
   .js .reveal .quote-block__mark { opacity: .5 !important; transform: none !important; }
   .js .hero__title .w { opacity: 1 !important; transform: none !important; }
   .mark svg path { stroke-dashoffset: 0 !important; }
-  .js .specimen__hw { clip-path: none !important; }
-  .js .specimen__note { opacity: 1 !important; }
-  .js .specimen__t::after { opacity: 1 !important; }
+  .js .specimen__hw .ch { opacity: 1 !important; filter: none !important; transform: none !important; }
+  .js .specimen__pop { opacity: 1 !important; transform: translateX(-28px) scale(1) !important; }
   .float-soft { animation: none; }
 }
 
