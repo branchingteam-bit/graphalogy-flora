@@ -39,15 +39,17 @@ Then open the printed URL.
 
 1. **Set the real domain.** Replace `https://florainkanalytics.com` everywhere
    (canonical tags, Open Graph tags, `robots.txt`, `sitemap.xml`, JSON-LD).
-2. **Add images** to `assets/` — `flora.jpg` and `og-image.jpg`. See `assets/README.md`.
+2. **Images:** `assets/og-image.jpg` (link previews) is already in place. A photo
+   of Flora is optional — see `assets/README.md`.
 3. **Check the contact details** in the footer, `contact.html`, and every
    `wa.me/447789262008` link (currently the number from the original site).
 4. **Contact form:** right now the form opens the visitor's email app with the
    message pre-filled (works with zero setup). To collect submissions properly,
    make a free form endpoint (e.g. Formspree) and paste it into `FORM_ENDPOINT`
    near the bottom of `js/main.js`.
-5. **Blog editor:** set the two Vercel environment variables below and change the
-   password off `222`.
+5. **Blog editor:** the editor password is **`flora444flora`** (baked in — no
+   setup). It only *publishes* once one env var (`GITHUB_TOKEN`) is set on
+   Vercel — see below.
 
 ---
 
@@ -70,13 +72,16 @@ the sitemap.
 
 ### Setup (one time, in the Vercel dashboard → Settings → Environment Variables)
 
-| Name             | Value                                                        |
-|------------------|-------------------------------------------------------------|
-| `GITHUB_TOKEN`   | a GitHub token with **Contents: Read and write** on this repo |
-| `ADMIN_PASSWORD` | the real editor password (until you set this it is `222`)    |
-| `SITE_URL`       | your live domain, e.g. `https://florainkanalytics.com` (optional) |
+| Name             | Needed? | Value                                                        |
+|------------------|---------|-------------------------------------------------------------|
+| `GITHUB_TOKEN`   | **yes, to publish** | a GitHub token with **Contents: Read and write** on this repo |
+| `ADMIN_PASSWORD` | optional | override the editor password (default is `flora444flora`)   |
+| `SITE_URL`       | optional | your live domain, e.g. `https://florainkanalytics.com`       |
 
-Redeploy once after adding them.
+The site, the pages, and the editor screen all work with **zero** env vars.
+The **Publish** button is the only thing that needs `GITHUB_TOKEN` — without it
+the editor loads and shows "GITHUB_TOKEN is not set" when you try to publish.
+Redeploy once after adding it.
 
 To make the `GITHUB_TOKEN`: GitHub → Settings → Developer settings →
 **Fine-grained tokens** → *Generate new token* → repository access = only
@@ -85,9 +90,9 @@ Read and write** → generate → paste the value into Vercel. Nothing else need
 
 ### Security — read this
 
-- **`222` is a placeholder, not real security.** A 3-digit password can be
-  guessed in seconds. Set `ADMIN_PASSWORD` to a real one before the site gets
-  meaningful traffic.
+- The password `flora444flora` is baked into the code (in `api/*.js`). It keeps
+  casual visitors out, but it's not a strong secret. To change it, set
+  `ADMIN_PASSWORD` on Vercel — that overrides the baked-in default.
 - `/admin.html` is unlinked and `noindex`, so visitors and leads won't stumble
   onto it — but "hidden" is not "protected". The password (checked server-side)
   is the real gate.
@@ -107,49 +112,28 @@ functions). Locally, `/admin.html` will just say "server not reachable".
 
 ## Putting it on GitHub, then Vercel
 
-This folder is **already connected to GitHub**:
-<https://github.com/branchingteam-bit/graphalogy-flora>
+GitHub is connected and every change so far is already pushed to
+<https://github.com/branchingteam-bit/graphalogy-flora>.
 
-So GitHub is done. You just need to push the new work, then link Vercel.
+### Connect Vercel (the one thing that needs you — ~5 clicks, one time)
 
-### 1. Push the redesign
-
-Open Terminal in this folder and run:
-
-```bash
-git add -A
-git commit -m "Redesigned multi-page site"
-git push
-```
-
-If GitHub asks you to sign in, use a **Personal Access Token** as the password
-(GitHub → Settings → Developer settings → Personal access tokens → Fine-grained
-tokens → generate one with "Contents: Read and write" for this repo). Or install
-[GitHub CLI](https://cli.github.com) and run `gh auth login` once.
-
-Refresh the GitHub page afterwards — the new files will be there.
-
-> Starting a brand-new repo instead? `git init`, then
-> `git remote add origin <url>`, `git branch -M main`, `git push -u origin main`.
-
-### 2. Connect Vercel
-
-1. Go to <https://vercel.com> and sign in **with GitHub**.
+1. Go to <https://vercel.com> and **Sign up / Log in with GitHub**.
 2. Click **Add New… → Project**.
-3. Find `graphalogy-flora` in the list and click **Import**.
-   (If Vercel can't see it: **Adjust GitHub App Permissions** and give it access
-   to the repo.)
-4. Vercel auto-detects it as a static site. You don't need to change anything:
-   - Framework Preset: **Other**
-   - Build Command: *(leave empty)*
-   - Output Directory: *(leave empty — it serves the repo root)*
-5. Click **Deploy**. About 20 seconds later you get a live URL like
+3. Find **`graphalogy-flora`** and click **Import**.
+   (If it's not listed: **Adjust GitHub App Permissions** → give Vercel access to
+   the repo, then come back.)
+4. Don't change any settings — Framework Preset **Other**, Build Command and
+   Output Directory both empty.
+5. Click **Deploy**. ~20 seconds later you have a live URL like
    `graphalogy-flora.vercel.app`.
 
-From now on, **every `git push` to `main` redeploys automatically.** Change a
-file, commit, push — the live site updates itself.
+That's it. **Every `git push` to `main` now redeploys the site automatically.**
 
-### 3. Point the real domain at it (when ready)
+The blog editor at `/admin.html` (password `flora444flora`) will load right away.
+To make its **Publish** button work, add one variable — see
+[Blog editor → Setup](#setup-one-time-in-the-vercel-dashboard--settings--environment-variables).
+
+### Point the real domain at it (when ready)
 
 In the Vercel project: **Settings → Domains → Add**, type the domain, and Vercel
 shows the exact DNS records to enter at the domain registrar. Then do the

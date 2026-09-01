@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch (e) { payload = {}; } }
   payload = payload || {};
 
-  if (String(payload.password || '') !== (process.env.ADMIN_PASSWORD || '222')) {
+  if (String(payload.password || '') !== (process.env.ADMIN_PASSWORD || 'flora444flora')) {
     return json(res, 401, { error: 'Wrong password' });
   }
   const token = process.env.GITHUB_TOKEN;

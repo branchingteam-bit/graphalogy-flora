@@ -15,7 +15,7 @@
    Required environment variables (set in the Vercel dashboard):
      GITHUB_TOKEN    a GitHub token with "Contents: read and write"
                      on this repo   (NEVER commit this)
-     ADMIN_PASSWORD  the real editor password (falls back to "222")
+     ADMIN_PASSWORD  optional override; defaults to "flora444flora"
    Optional:
      GITHUB_REPO     default "branchingteam-bit/graphalogy-flora"
      GITHUB_BRANCH   default "main"
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
   payload = payload || {};
 
   const password = String(payload.password || '');
-  if (password !== (process.env.ADMIN_PASSWORD || '222')) {
+  if (password !== (process.env.ADMIN_PASSWORD || 'flora444flora')) {
     return json(res, 401, { error: 'Wrong password' });
   }
   const token = process.env.GITHUB_TOKEN;

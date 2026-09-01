@@ -10,7 +10,7 @@ const path = require('path');
 
 module.exports = async (req, res) => {
   const given = String(req.headers['x-admin-password'] || (req.query && req.query.password) || '');
-  if (given !== (process.env.ADMIN_PASSWORD || '222')) {
+  if (given !== (process.env.ADMIN_PASSWORD || 'flora444flora')) {
     res.statusCode = 401;
     res.setHeader('Content-Type', 'application/json');
     return res.end(JSON.stringify({ error: 'Wrong password' }));
