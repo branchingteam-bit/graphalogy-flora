@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Journal editor — Flora Ink Analytics</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <script>document.documentElement.className += ' js';</script>
+
+  <!-- ===== password gate ===== -->
+  <section class="admin__gate" id="gate">
+    <span class="eyebrow eyebrow--plain">Private</span>
+    <h1 class="h2" style="margin:.5rem 0 0">Journal editor</h1>
+    <p class="muted" style="font-size:.85rem;color:var(--ink-faint);margin-top:.5rem">For Flora only. Enter the password to continue.</p>
+    <form id="gateForm">
+      <div class="field">
+        <label for="pw">Password</label>
+        <input type="password" id="pw" autocomplete="current-password" autofocus />
+      </div>
+      <button class="btn btn--lg" type="submit" style="width:100%">Unlock</button>
+      <div class="admin__msg err" id="gateMsg"></div>
+    </form>
+  </section>
+
+  <!-- ===== editor ===== -->
+  <main class="admin" id="app" hidden>
+    <div class="admin__bar">
+      <div>
+        <h1>Journal editor</h1>
+        <p class="muted">Write a post &rarr; publish &rarr; it goes live and gets picked up by Google on its own.</p>
+      </div>
+      <button class="btn btn--ghost" id="logout" type="button">Lock</button>
+    </div>
+
+    <div class="admin__grid">
+      <form id="postForm">
+        <input type="hidden" id="slug" />
+        <div class="field">
+          <label for="title">Title</label>
+          <input type="text" id="title" required placeholder="What your slant says about you" />
+        </div>
+        <div class="field">
+          <label for="excerpt">Short summary <span style="font-weight:400;color:var(--ink-faint)">(1 sentence — shows on the blog list &amp; in Google)</span></label>
+          <input type="text" id="excerpt" placeholder="Leave blank to use the first sentence of the post." />
+        </div>
+        <div class="field">
+          <label for="date">Date</label>
+          <input type="date" id="date" />
+        </div>
+        <div class="field">
+          <label for="body">Post <span style="font-weight:400;color:var(--ink-faint)">(blank line = new paragraph &nbsp;·&nbsp; <code>## Heading</code> &nbsp;·&nbsp; <code>- bullet</code> &nbsp;·&nbsp; <code>**bold**</code> &nbsp;·&nbsp; <code>[link](https://…)</code>)</span></label>
+          <textarea id="body" rows="16" required placeholder="Write here…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn--lg" type="submit" id="publishBtn">Publish</button>
+          <button class="btn btn--lg btn--ghost" type="button" id="newBtn">Clear / new post</button>
+          <button class="btn btn--ghost" type="button" id="deleteBtn" hidden style="--bd:#c98;color:#8a2f2f">Delete this post</button>
+        </div>
+        <div class="admin__msg" id="msg"></div>
+
+        <div class="admin__preview" id="preview" aria-live="polite"></div>
+      </form>
+
+      <aside class="admin__side">
+        <h2>Published posts</h2>
+        <div class="admin__posts" id="posts"><p class="muted" style="font-size:.85rem;color:var(--ink-faint)">Loading…</p></div>
+        <p class="muted" style="font-size:.8rem;color:var(--ink-faint);margin-top:1rem">
+          Editing an older post republishes it. New posts appear on
+          <a href="blog.html" target="_blank" rel="noopener">the blog</a> and in the
+          sitemap automatically.
+        </p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+  (function () {
+    var KEY = 'flora_admin_pw';
+    var gate = document.getElementById('gate');
+    var app = document.getElementById('app');
+    var pw = '';
+
+    function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    function inlineMd(s){
+      s = esc(s);
+      s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+      s = s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+      s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+      return s;
+    }
+    function mdToHtml(src){
+      return String(src).replace(/\r\n/g,'\n').split(/\n{2,}/).map(function(block){
+        var b = block.trim(); if(!b) return '';
+        if(/^###\s+/.test(b)) return '<h3>'+inlineMd(b.replace(/^###\s+/,''))+'</h3>';
+        if(/^##\s+/.test(b))  return '<h2>'+inlineMd(b.replace(/^##\s+/,''))+'</h2>';
+        if(/^>\s?/.test(b))   return '<blockquote>'+inlineMd(b.replace(/^>\s?/gm,''))+'</blockquote>';
+        if(/^[-*]\s+/.test(b)){
+          var items = b.split('\n').filter(function(l){return /^[-*]\s+/.test(l);})
+            .map(function(l){return '<li>'+inlineMd(l.replace(/^[-*]\s+/,''))+'</li>';}).join('');
+          return '<ul>'+items+'</ul>';
+        }
+        return '<p>'+inlineMd(b).replace(/\n/g,'<br>')+'</p>';
+      }).filter(Boolean).join('\n');
+    }
+
+    var $ = function (id) { return document.getElementById(id); };
+    var msg = $('msg');
+    function say(text, kind) { msg.textContent = text; msg.className = 'admin__msg show ' + (kind || 'ok'); }
+    function clearMsg() { msg.className = 'admin__msg'; }
+
+    function unlock(p) {
+      pw = p;
+      try { sessionStorage.setItem(KEY, p); } catch (e) {}
+      gate.hidden = true; app.hidden = false;
+      $('date').value = new Date().toISOString().slice(0, 10);
+      loadPosts();
+      renderPreview();
+    }
+
+    document.getElementById('gateForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var val = $('pw').value;
+      if (!val) return;
+      // verify against the server (list endpoint doubles as an auth check)
+      fetch('/api/posts', { headers: { 'x-admin-password': val } }).then(function (r) {
+        if (r.ok) { unlock(val); }
+        else if (r.status === 401) { $('gateMsg').textContent = 'Wrong password.'; $('gateMsg').className = 'admin__msg err show'; }
+        else { $('gateMsg').textContent = 'Server not reachable — is this running on Vercel?'; $('gateMsg').className = 'admin__msg err show'; }
+      }).catch(function () {
+        $('gateMsg').textContent = 'Server not reachable. The editor only works on the deployed (Vercel) site.';
+        $('gateMsg').className = 'admin__msg err show';
+      });
+    });
+
+    document.getElementById('logout').addEventListener('click', function () {
+      try { sessionStorage.removeItem(KEY); } catch (e) {}
+      location.reload();
+    });
+
+    function loadPosts() {
+      fetch('/api/posts', { headers: { 'x-admin-password': pw } })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          var wrap = $('posts');
+          var posts = (d && d.posts) || [];
+          if (!posts.length) { wrap.innerHTML = '<p class="muted" style="font-size:.85rem;color:var(--ink-faint)">No posts yet.</p>'; return; }
+          wrap.innerHTML = '';
+          posts.forEach(function (p) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'admin__post';
+            b.innerHTML = '<span>' + esc(p.title || p.slug) + '</span><small>' + esc(p.date || '') + '</small>';
+            b.addEventListener('click', function () { loadIntoForm(p); });
+            wrap.appendChild(b);
+          });
+        }).catch(function () {});
+    }
+
+    function loadIntoForm(p) {
+      $('slug').value = p.slug || '';
+      $('title').value = p.title || '';
+      $('excerpt').value = p.excerpt || '';
+      $('date').value = p.date || new Date().toISOString().slice(0, 10);
+      $('body').value = p.body || '';
+      $('deleteBtn').hidden = !p.slug;
+      $('publishBtn').textContent = 'Update post';
+      clearMsg();
+      renderPreview();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('newBtn').addEventListener('click', function () {
+      $('postForm').reset();
+      $('slug').value = '';
+      $('date').value = new Date().toISOString().slice(0, 10);
+      $('deleteBtn').hidden = true;
+      $('publishBtn').textContent = 'Publish';
+      clearMsg();
+      renderPreview();
+    });
+
+    function renderPreview() {
+      var t = $('title').value.trim();
+      var html = mdToHtml($('body').value);
+      $('preview').innerHTML = (t ? '<h2 style="font-size:1.6rem;margin-top:0">' + esc(t) + '</h2>' : '') +
+        (html || '<p class="muted" style="color:var(--ink-faint)">Preview appears here as you type.</p>');
+    }
+    $('title').addEventListener('input', renderPreview);
+    $('body').addEventListener('input', renderPreview);
+
+    document.getElementById('postForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = $('publishBtn');
+      btn.disabled = true; say('Publishing…', 'ok');
+      fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: pw,
+          slug: $('slug').value.trim() || undefined,
+          title: $('title').value.trim(),
+          excerpt: $('excerpt').value.trim(),
+          date: $('date').value,
+          body: $('body').value
+        })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (x) {
+          btn.disabled = false;
+          if (x.ok) {
+            say('Published. It is live at ' + x.d.url + ' and will be redeployed in ~30 seconds.', 'ok');
+            $('slug').value = x.d.slug;
+            $('deleteBtn').hidden = false;
+            $('publishBtn').textContent = 'Update post';
+            setTimeout(loadPosts, 1500);
+          } else {
+            say('Could not publish: ' + (x.d.error || 'unknown error'), 'err');
+          }
+        }).catch(function (err) {
+          btn.disabled = false;
+          say('Network error: ' + err.message, 'err');
+        });
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', function () {
+      var slug = $('slug').value.trim();
+      if (!slug) return;
+      if (!confirm('Delete "' + slug + '"? This removes the live page.')) return;
+      fetch('/api/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, slug: slug })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (x) {
+          if (x.ok) { say('Deleted.', 'ok'); document.getElementById('newBtn').click(); setTimeout(loadPosts, 1500); }
+          else { say('Could not delete: ' + (x.d.error || 'unknown'), 'err'); }
+        });
+    });
+
+    // resume a session
+    var saved = '';
+    try { saved = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+    if (saved) {
+      fetch('/api/posts', { headers: { 'x-admin-password': saved } })
+        .then(function (r) { if (r.ok) unlock(saved); }).catch(function () {});
+    }
+  })();
+  </script>
+</body>
+</html>
