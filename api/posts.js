@@ -1,5 +1,5 @@
 /* ============================================================
-   GET /api/posts   — list the editable blog posts (with source)
+   GET /api/posts   - list the editable blog posts (with source)
    Auth: header  x-admin-password: <password>   (or ?password=)
    Reads the source files that /api/publish wrote to posts/*.json
    from the current deployment.

@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Journal editor — Flora Ink Analytics</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <title>Journal editor | Flora Ink Analytics</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
   <script>document.documentElement.className += ' js';</script>
@@ -47,7 +47,7 @@
           <input type="text" id="title" required placeholder="What your slant says about you" />
         </div>
         <div class="field">
-          <label for="excerpt">Short summary <span style="font-weight:400;color:var(--ink-faint)">(1 sentence — shows on the blog list &amp; in Google)</span></label>
+          <label for="excerpt">Short summary <span style="font-weight:400;color:var(--ink-faint)">(one sentence, shows on the blog list &amp; in Google)</span></label>
           <input type="text" id="excerpt" placeholder="Leave blank to use the first sentence of the post." />
         </div>
         <div class="field">
@@ -73,7 +73,7 @@
         <div class="admin__posts" id="posts"><p class="muted" style="font-size:.85rem;color:var(--ink-faint)">Loading…</p></div>
         <p class="muted" style="font-size:.8rem;color:var(--ink-faint);margin-top:1rem">
           Editing an older post republishes it. New posts appear on
-          <a href="blog.html" target="_blank" rel="noopener">the blog</a> and in the
+          <a href="/blog" target="_blank" rel="noopener">the blog</a> and in the
           sitemap automatically.
         </p>
       </aside>
@@ -132,7 +132,7 @@
       fetch('/api/posts', { headers: { 'x-admin-password': val } }).then(function (r) {
         if (r.ok) { unlock(val); }
         else if (r.status === 401) { $('gateMsg').textContent = 'Wrong password.'; $('gateMsg').className = 'admin__msg err show'; }
-        else { $('gateMsg').textContent = 'Server not reachable — is this running on Vercel?'; $('gateMsg').className = 'admin__msg err show'; }
+        else { $('gateMsg').textContent = 'Server not reachable. Is this running on Vercel?'; $('gateMsg').className = 'admin__msg err show'; }
       }).catch(function () {
         $('gateMsg').textContent = 'Server not reachable. The editor only works on the deployed (Vercel) site.';
         $('gateMsg').className = 'admin__msg err show';

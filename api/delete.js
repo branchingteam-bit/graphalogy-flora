@@ -1,5 +1,5 @@
 /* ============================================================
-   POST /api/delete   — remove a blog post
+   POST /api/delete   - remove a blog post
    Body (JSON): { password, slug }
    Deletes blog-<slug>.html + posts/<slug>.json and regenerates
    posts/index.json + sitemap.xml, in one commit.
@@ -34,9 +34,9 @@ module.exports = async (req, res) => {
     if (!Array.isArray(list.posts)) list.posts = [];
     list.posts = list.posts.filter(p => p && p.slug !== slug);
 
-    const core = ['/', '/about.html', '/services.html', '/programs.html', '/testimonials.html', '/blog.html', '/contact.html'];
+    const core = ['/', '/my-story', '/services', '/testimonials', '/blog', '/contact', '/blog-t-bar'];
     const urls = core.map(u => '  <url><loc>' + SITE + u + '</loc></url>')
-      .concat(list.posts.map(p => '  <url><loc>' + SITE + '/blog-' + p.slug + '.html</loc><lastmod>' + p.date + '</lastmod></url>'));
+      .concat(list.posts.filter(p => p.slug !== 't-bar').map(p => '  <url><loc>' + SITE + '/blog-' + p.slug + '</loc><lastmod>' + p.date + '</lastmod></url>'));
     const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls.join('\n') + '\n</urlset>\n';
 
     const ref = await gh('/repos/' + REPO + '/git/ref/heads/' + BRANCH, token);

@@ -1,5 +1,5 @@
 /* ============================================================
-   POST /api/publish   — create or update a blog post
+   POST /api/publish   - create or update a blog post
    ------------------------------------------------------------
    Body (JSON): { password, title, body, excerpt?, slug?, date? }
 
@@ -25,7 +25,7 @@
 const REPO   = process.env.GITHUB_REPO   || 'branchingteam-bit/graphalogy-flora';
 const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const SITE   = (process.env.SITE_URL    || 'https://florainkanalytics.com').replace(/\/$/, '');
-const RESERVED = ['t-bar', 'index', 'about', 'services', 'programs', 'testimonials', 'contact', 'blog', '404'];
+const RESERVED = ['t-bar', 'index', 'my-story', 'services', 'testimonials', 'contact', 'blog', 'admin', '404'];
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'Use POST' });
@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
       { path: 'sitemap.xml', content: sitemap }
     ]);
 
-    return json(res, 200, { ok: true, slug, url: SITE + '/blog-' + slug + '.html' });
+    return json(res, 200, { ok: true, slug, url: SITE + '/blog-' + slug });
   } catch (err) {
     return json(res, 502, { error: 'GitHub API error: ' + (err && err.message || String(err)) });
   }
@@ -141,17 +141,81 @@ function mdToHtml(src) {
 }
 
 function renderSitemap(posts) {
-  const core = ['/', '/about.html', '/services.html', '/programs.html', '/testimonials.html', '/blog.html', '/contact.html'];
+  const core = ['/', '/my-story', '/services', '/testimonials', '/blog', '/contact', '/blog-t-bar'];
   const urls = core.map(u => '  <url><loc>' + SITE + u + '</loc></url>')
-    .concat(posts.map(p => '  <url><loc>' + SITE + '/blog-' + esc(p.slug) + '.html</loc><lastmod>' + esc(p.date) + '</lastmod></url>'));
+    .concat(posts
+      .filter(p => p.slug !== 't-bar')
+      .map(p => '  <url><loc>' + SITE + '/blog-' + esc(p.slug) + '</loc><lastmod>' + esc(p.date) + '</lastmod></url>'));
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.join('\n') + '\n</urlset>\n';
+}
+
+function navFooter() {
+  return `<header class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="brand" href="/" aria-label="Flora Ink Analytics, home">
+        <span class="brand__name">Flora Ink Analytics</span>
+        <span class="brand__tag">Graphology</span>
+      </a>
+      <button class="nav__toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span></button>
+      <nav class="nav__links" id="navLinks" aria-label="Primary">
+        <a href="/my-story">My Story</a>
+        <a href="/services">Services</a>
+        <a href="/testimonials">Testimonials</a>
+        <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener">Book your free handwriting analysis</a>
+      </nav>
+    </div>
+  </header>`;
+}
+
+function footer() {
+  return `<footer class="footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <span class="brand__name">Flora Ink Analytics</span>
+          <p>Handwriting analysis and grapho-therapy with Flora.<br>Dubai, UAE, and online worldwide.</p>
+          <a class="footer__wa" href="https://wa.me/447789262008" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg> WhatsApp Flora</a>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/my-story">My Story</a></li>
+            <li><a href="/services">Services &amp; Programs</a></li>
+            <li><a href="/testimonials">Testimonials</a></li>
+            <li><a href="/blog">Journal</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>What Flora does</h4>
+          <ul>
+            <li><a href="/services#analysis">Handwriting analysis</a></li>
+            <li><a href="/services#graphotherapy">Grapho-therapy</a></li>
+            <li><a href="/services#signature">Signature analysis</a></li>
+            <li><a href="/services#programs">30, 60 &amp; 90-day programs</a></li>
+            <li><a href="/services#health">Health in Handwriting</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Start here</h4>
+          <p>Your first handwriting analysis is completely free.</p>
+          <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener">Book your free handwriting analysis</a>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>&copy; <span id="year">2026</span> Flora Ink Analytics. All rights reserved.</span>
+        <span>Website by <a href="https://atlanticbear.com" target="_blank" rel="noopener">Atlantic Bear</a></span>
+      </div>
+    </div>
+  </footer>`;
 }
 
 function renderPage(p) {
   const t = esc(p.title);
   const d = esc(p.excerpt);
-  const url = SITE + '/blog-' + p.slug + '.html';
+  const url = SITE + '/blog-' + p.slug;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,11 +230,11 @@ function renderPage(p) {
   <meta property="og:url" content="${url}" />
   <meta property="og:image" content="${SITE}/assets/og-image.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="/css/style.css" />
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Article","headline":${JSON.stringify(p.title)},"datePublished":"${p.date}","author":{"@type":"Person","name":"Flora"},"publisher":{"@type":"Organization","name":"Flora Ink Analytics"},"mainEntityOfPage":"${url}"}
   </script>
@@ -184,24 +248,7 @@ function renderPage(p) {
     <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
   </svg>
 
-  <header class="nav" id="nav">
-    <div class="nav__inner">
-      <a class="brand" href="index.html" aria-label="Flora Ink Analytics — home">
-        <span class="brand__name">Flora Ink Analytics</span>
-        <span class="brand__tag">Graphology</span>
-      </a>
-      <button class="nav__toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span></button>
-      <nav class="nav__links" id="navLinks" aria-label="Primary">
-        <a href="about.html">About</a>
-        <a href="services.html">Services</a>
-        <a href="programs.html">Programs</a>
-        <a href="testimonials.html">Testimonials</a>
-        <a href="blog.html">Blog</a>
-        <a href="contact.html">Contact</a>
-        <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener">Book Analysis</a>
-      </nav>
-    </div>
-  </header>
+  ${navFooter()}
 
   <main id="main">
     <section class="page-head">
@@ -213,60 +260,19 @@ function renderPage(p) {
     <section class="bay">
       <div class="wrap">
         <article class="prose">
-          <a class="back-link" href="blog.html"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg> All notes</a>
+          <a class="back-link" href="/blog"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg> All notes</a>
           ${p.contentHtml}
           <div class="btn-row" style="margin-top:2rem">
-            <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg> Book a free analysis</a>
+            <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg> Book your free handwriting analysis</a>
           </div>
         </article>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="wrap">
-      <div class="footer__grid">
-        <div>
-          <span class="brand__name">Flora Ink Analytics</span>
-          <p>Handwriting analysis &amp; grapho-therapy with Flora.<br>Dubai, UAE — and online worldwide.</p>
-          <a class="footer__wa" href="https://wa.me/447789262008" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg> WhatsApp Flora</a>
-        </div>
-        <div>
-          <h4>Explore</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html">About Flora</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="programs.html">Programs</a></li>
-            <li><a href="testimonials.html">Testimonials</a></li>
-            <li><a href="blog.html">Blog</a></li>
-            <li><a href="contact.html">Contact</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Services</h4>
-          <ul>
-            <li><a href="services.html#analysis">Handwriting Analysis</a></li>
-            <li><a href="services.html#graphotherapy">Grapho-therapy</a></li>
-            <li><a href="services.html#signature">Signature Analysis</a></li>
-            <li><a href="programs.html#kids">Kids Writing Program</a></li>
-            <li><a href="programs.html#health">Health in Handwriting</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Begin</h4>
-          <p>Your first handwriting analysis is completely free.</p>
-          <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener">Book a Handwriting Analysis</a>
-        </div>
-      </div>
-      <div class="footer__bottom">
-        <span>&copy; <span id="year">2026</span> Flora Ink Analytics. All rights reserved.</span>
-        <span>Website by <a href="https://atlanticbear.com" target="_blank" rel="noopener">Atlantic Bear</a></span>
-      </div>
-    </div>
-  </footer>
+  ${footer()}
 
-  <script src="js/main.js"></script>
+  <script src="/js/main.js"></script>
 </body>
 </html>
 `;

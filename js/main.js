@@ -1,5 +1,5 @@
 /* ============================================================
-   FLORA INK ANALYTICS — main.js
+   FLORA INK ANALYTICS - main.js
    Dependency-free. Everything degrades gracefully and
    respects prefers-reduced-motion.
    ============================================================ */
@@ -33,7 +33,7 @@
       }
       // gentle parallax on the hero specimen
       if (specimen && !reduce && y < window.innerHeight * 1.5) {
-        specimen.style.transform = 'rotate(-1.2deg) translateY(' + (y * -0.04).toFixed(1) + 'px)';
+        specimen.style.transform = 'translateY(' + (y * -0.035).toFixed(1) + 'px)';
       }
       ticking = false;
     });
@@ -61,12 +61,11 @@
   }
 
   /* ---- Mark current page in nav ------------------------- */
-  var here = location.pathname.split('/').pop() || 'index.html';
+  var here = location.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') || '/';
   document.querySelectorAll('#navLinks a[href]').forEach(function (a) {
-    var href = a.getAttribute('href');
-    if ((href === here || (here === 'index.html' && href === 'index.html')) && !a.classList.contains('btn')) {
-      a.setAttribute('aria-current', 'page');
-    }
+    if (a.classList.contains('btn')) return;
+    var href = a.getAttribute('href').replace(/\.html$/, '').replace(/\/index$/, '/');
+    if (href === here) a.setAttribute('aria-current', 'page');
   });
 
   /* ---- Scroll reveal ----------------------------------- */
@@ -118,32 +117,26 @@
     }
   }
 
-  /* ---- Specimen: write the page ----------------------- */
+  /* ---- Specimen: write the handwriting when it scrolls in --- */
   if (specimen) {
-    var strokes = specimen.querySelectorAll('.specimen__hand path, .specimen__tbar path');
-    if (reduce) {
-      strokes.forEach(function (p) { p.style.strokeDashoffset = '0'; });
-    } else if (strokes.length) {
-      strokes.forEach(function (p, i) {
-        var len = 400;
-        try { len = Math.ceil(p.getTotalLength()) || 400; } catch (e) {}
-        p.style.setProperty('--len', len);
-      });
-      // index within each group for stagger
-      [specimen.querySelectorAll('.specimen__hand path'), specimen.querySelectorAll('.specimen__tbar path')]
-        .forEach(function (grp) {
-          Array.prototype.forEach.call(grp, function (p, i) { p.style.setProperty('--i', i); });
+    if (reduce || !('IntersectionObserver' in window)) {
+      specimen.classList.add('is-writing');
+    } else {
+      var so = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { specimen.classList.add('is-writing'); so.disconnect(); }
         });
-      if ('IntersectionObserver' in window) {
-        var so = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (e.isIntersecting) { specimen.classList.add('is-writing'); so.disconnect(); }
-          });
-        }, { threshold: 0.3 });
-        so.observe(specimen);
-      } else {
-        specimen.classList.add('is-writing');
-      }
+      }, { threshold: 0.35 });
+      so.observe(specimen);
+      // safety: if it is already on screen at load, kick it off
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          if (!specimen.classList.contains('is-writing') &&
+              specimen.getBoundingClientRect().top < window.innerHeight) {
+            specimen.classList.add('is-writing');
+          }
+        }, 500);
+      });
     }
   }
 
@@ -196,7 +189,7 @@
           .catch(function () {});
         return;
       }
-      var subject = 'Handwriting analysis enquiry' + (name ? ' — ' + name : '');
+      var subject = 'Handwriting analysis enquiry' + (name ? ', ' + name : '');
       var body = 'Name: ' + name + '\n' + 'Email: ' + email + '\n' +
         (interest ? 'Interested in: ' + interest + '\n' : '') + '\n' + message + '\n';
       window.location.href = 'mailto:' + CONTACT_EMAIL +
@@ -218,7 +211,7 @@
         posts.forEach(function (p) {
           var a = document.createElement('a');
           a.className = 'card article-card reveal is-in';
-          a.href = 'blog-' + p.slug + '.html';
+          a.href = '/blog-' + p.slug;
           a.innerHTML =
             '<span class="article-meta">' + esc(p.date || '') + (p.readingTime ? ' &middot; ' + esc(p.readingTime) : '') + '</span>' +
             '<h3>' + esc(p.title || 'Untitled') + '</h3>' +
