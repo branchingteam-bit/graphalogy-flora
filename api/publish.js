@@ -162,6 +162,8 @@ function navFooter() {
         <a href="/my-story">My Story</a>
         <a href="/services">Services</a>
         <a href="/testimonials">Testimonials</a>
+        <a href="/blog">Blog</a>
+        <a href="/contact">Contact</a>
         <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener">Book your free handwriting analysis</a>
       </nav>
     </div>
@@ -184,7 +186,7 @@ function footer() {
             <li><a href="/my-story">My Story</a></li>
             <li><a href="/services">Services</a></li>
             <li><a href="/testimonials">Testimonials</a></li>
-            <li><a href="/blog">Journal</a></li>
+            <li><a href="/blog">Blog</a></li>
             <li><a href="/contact">Contact</a></li>
           </ul>
         </div>
@@ -252,7 +254,7 @@ function renderPage(p) {
 
   <main id="main">
     <section class="page-head">
-      <span class="eyebrow">The journal</span>
+      <span class="eyebrow">The blog</span>
       <h1>${t}</h1>
       <p class="article-meta">${esc(p.date)} &middot; ${esc(p.readingTime)}</p>
     </section>
@@ -260,7 +262,7 @@ function renderPage(p) {
     <section class="bay">
       <div class="wrap">
         <article class="prose">
-          <a class="back-link" href="/blog"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg> All notes</a>
+          <a class="back-link" href="/blog"><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg> Back to the blog</a>
           ${p.contentHtml}
           <div class="btn-row" style="margin-top:2rem">
             <a class="btn" href="https://wa.me/447789262008" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-wa"/></svg> Book your free handwriting analysis</a>

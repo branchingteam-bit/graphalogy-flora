@@ -374,8 +374,8 @@ h1, h2, h3, h4 {
   gap: .35rem;
 }
 .nav__links a:not(.btn) {
-  padding: .5rem .8rem;
-  font-size: .9rem;
+  padding: .45rem .62rem;
+  font-size: .875rem;
   font-weight: 500;
   color: var(--ink-soft);
   border-radius: 8px;
@@ -386,7 +386,7 @@ h1, h2, h3, h4 {
   color: var(--forest-900);
   font-weight: 600;
 }
-.nav__links .btn { margin-left: .6rem; padding: .6rem 1.15rem; font-size: .82rem; }
+.nav__links .btn { margin-left: .5rem; padding: .58rem 1rem; font-size: .8rem; }
 
 .nav__toggle {
   display: none;
@@ -1127,6 +1127,48 @@ a.channel:hover { border-color: var(--sage-400); box-shadow: var(--shadow-1); }
 .faq h4 { font-size: 1.08rem; margin-bottom: .5rem; }
 .faq p { font-size: .9rem; color: var(--ink-soft); }
 
+/* big contact details ("reach") */
+.reach {
+  display: grid;
+  gap: clamp(1rem, 2.4vw, 1.6rem);
+  max-width: 780px;
+  margin-inline: auto;
+}
+.reach__item {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  padding: clamp(1.6rem, 4vw, 2.75rem);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+a.reach__item:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-color: var(--sage-400); }
+.reach__item > .icon { width: 2.4rem; height: 2.4rem; color: var(--accent); }
+.reach__label {
+  font-family: var(--sans);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.reach__value {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 4.5vw, 2.4rem);
+  line-height: 1.15;
+  color: var(--forest-900);
+  word-break: break-word;
+}
+.reach__item--wa {
+  background: linear-gradient(160deg, var(--forest-800), var(--forest-900));
+  border-color: transparent;
+}
+.reach__item--wa .icon { color: var(--accent-soft); }
+.reach__item--wa .reach__label { color: var(--accent-soft); }
+.reach__item--wa .reach__value { color: #fff; }
+
 /* 16. CTA BAND ------------------------------------------------ */
 .cta-band {
   background:
@@ -1380,8 +1422,8 @@ a.channel:hover { border-color: var(--sage-400); box-shadow: var(--shadow-1); }
   .footer__grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* nav collapses earlier than content so the bar never crowds */
-@media (max-width: 1024px) {
+/* nav collapses to a menu button well before the links can crowd */
+@media (max-width: 1160px) {
   .nav__toggle { display: block; }
   .nav__links {
     position: fixed;
